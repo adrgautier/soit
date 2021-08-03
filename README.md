@@ -1,6 +1,6 @@
 # Soit
 
- **Soit** (French for: either) aims to easily create type guards based on lists of primitives.
+ **Soit** (French for: either) aims to easily create type guards based on lists of literals.
 
 ## Motivation
 
@@ -12,10 +12,10 @@ I wanted a simple lib which provides a type guard function from a list of values
 
 ## Definitions
 
-A *Soit* instance can be created by passing primitives (string, number or boolean) as arguments to the `Soit` function.
+A *Soit* instance can be created by passing literals (string, number or boolean) as arguments to the `Soit` function.
 
 ```ts
-const isWarmColor = Soit("red", "orange");
+const isWarmColor = soit("red", "orange");
 ```
 
 You can infer the corresponding union using the `Infer` "helper" provided by the lib.
@@ -23,21 +23,21 @@ You can infer the corresponding union using the `Infer` "helper" provided by the
 type WarmColor = Infer<typeof isWarmColor>; // returns "red" | "orange"
 ```
 
-You can pass as many primitives as you want.
+You can pass as many literals as you want.
 ```ts
-const isColdColor = Soit("blue", "cyan", "teal");
+const isColdColor = soit("blue", "cyan", "teal");
 ```
 
 You can also use other *Soit* instances to create new definitions.
 
 ```ts
-const isColor = Soit(isWarmColor, isColdColor, "green");
+const isColor = soit(isWarmColor, isColdColor, "green");
 
 type Color = Infer<typeof isColor>; // returns "red" | "orange" | "blue" | "cyan" | "teal" | "green"
 ```
 
 > Note: due to typescript limits, you can pass up to 4 *Soit* instances.
-> However there are no limits for primitives. 
+> However there are no limits for literals. 
 
 
 ## Guard

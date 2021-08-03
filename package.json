@@ -1,0 +1,60 @@
+{
+  "name": "soit",
+  "version": "0.0.1",
+  "description": "Create a type guard from a list of literals.",
+  "main": "dist/index.js",
+  "sideEffects": false,
+  "devDependencies": {
+    "@types/jest": "^26.0.14",
+    "jest": "^26.4.2",
+    "marked": "^0.4.0",
+    "prettier": "^2.1.2",
+    "rimraf": "^3.0.2",
+    "ts-jest": "^26.4.1",
+    "ts-node": "^8.4.1",
+    "typescript": "^4.0.3",
+    "zod": "3"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc",
+    "test": "jest --coverage && yarn run compile",
+    "compile": "tsc -p ./tsconfig.json --noEmit",
+    "prettier": "prettier 'src/**/*.ts' --write"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adrgautier/soit.git"
+  },
+  "keywords": [
+    "utils",
+    "typescript",
+    "guard",
+    "literal",
+    "union"
+  ],
+  "author": "Adrien Gautier",
+  "license": "MIT",
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "/src/.*.test.(jsx?|tsx?)$",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/dist/"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.tsx",
+      "src/**/*.ts"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
+  }
+}
