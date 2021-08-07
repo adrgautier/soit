@@ -1,23 +1,23 @@
-import soit from './index';
+import Soit from './index';
 import * as z from 'zod';
 
 describe('Soit', () => {
   it('should guard for any given string literal', () => {
-    const isSet1 = soit('one', 'two', 'three');
+    const isSet1 = Soit('one', 'two', 'three');
     expect(isSet1('one')).toBe(true);
     expect(isSet1('two')).toBe(true);
     expect(isSet1('three')).toBe(true);
     expect(isSet1('four')).toBe(false);
   });
   it('should guard for any given number literal', () => {
-    const isSet1 = soit(1, 2, 3);
+    const isSet1 = Soit(1, 2, 3);
     expect(isSet1(1)).toBe(true);
     expect(isSet1(2)).toBe(true);
     expect(isSet1(3)).toBe(true);
     expect(isSet1(4)).toBe(false);
   });
   it('should guard for any given mixed literal', () => {
-    const isSet1 = soit(1, 'two', false);
+    const isSet1 = Soit(1, 'two', false);
     expect(isSet1(1)).toBe(true);
     expect(isSet1('one')).toBe(false);
     expect(isSet1('two')).toBe(true);
@@ -25,10 +25,10 @@ describe('Soit', () => {
     expect(isSet1(false)).toBe(true);
     expect(isSet1(true)).toBe(false);
   });
-  it('should guard for combined soit instances', () => {
-    const isSet1 = soit(1, 2);
-    const isSet2 = soit('three', 'four');
-    const isCombinedSet = soit(isSet1, isSet2, true);
+  it('should guard for combined Soit instances', () => {
+    const isSet1 = Soit(1, 2);
+    const isSet2 = Soit('three', 'four');
+    const isCombinedSet = Soit(isSet1, isSet2, true);
     expect(isCombinedSet(1)).toBe(true);
     expect(isCombinedSet('one')).toBe(false);
     expect(isCombinedSet(2)).toBe(true);
@@ -41,9 +41,9 @@ describe('Soit', () => {
     expect(isCombinedSet(false)).toBe(false);
   });
   it('should guard for "fake"/"compatible" sets of options', () => {
-    const fakeSet = { options: ['one', 2] };
+    const fakeSet = { options: ['one', 2] as const };
     const compatibleSet = z.enum(['three', 'four']);
-    const isCombinedSet = soit(fakeSet, compatibleSet);
+    const isCombinedSet = Soit(fakeSet, compatibleSet);
     expect(isCombinedSet('one')).toBe(true);
     expect(isCombinedSet(1)).toBe(false);
     expect(isCombinedSet(2)).toBe(true);
@@ -55,10 +55,17 @@ describe('Soit', () => {
   });
   it('should not take into account incompatible objects', () => {
     const brokenSet: any = { broken: 'object' };
-    const isCombinedSet = soit(brokenSet, 'one', 2);
+    const isCombinedSet = Soit(brokenSet, 'one', 2);
     expect(isCombinedSet('one')).toBe(true);
     expect(isCombinedSet(1)).toBe(false);
     expect(isCombinedSet(2)).toBe(true);
     expect(isCombinedSet('two')).toBe(false);
+  });
+  it('should deduplicate combined sets of options with intersection', () => {
+    const isSet1 = Soit('one', 'two', 'three');
+    const isSet2 = Soit('two', 'three', 'four');
+    const isCombinedSet = Soit(isSet1, isSet2);
+
+    expect(isCombinedSet.options).toEqual(['one', 'two', 'three', 'four']);
   });
 });

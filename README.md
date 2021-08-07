@@ -15,7 +15,7 @@ I wanted a simple lib which provides a type guard function from a list of values
 A *Soit* instance can be created by passing literals (string, number or boolean) as arguments to the `Soit` function.
 
 ```ts
-const isWarmColor = soit("red", "orange");
+const isWarmColor = Soit("red", "orange");
 ```
 
 You can infer the corresponding union using the `Infer` "helper" provided by the lib.
@@ -25,13 +25,13 @@ type WarmColor = Infer<typeof isWarmColor>; // returns "red" | "orange"
 
 You can pass as many literals as you want.
 ```ts
-const isColdColor = soit("blue", "cyan", "teal");
+const isColdColor = Soit("blue", "cyan", "teal");
 ```
 
 You can also use other *Soit* instances to create new definitions.
 
 ```ts
-const isColor = soit(isWarmColor, isColdColor, "green");
+const isColor = Soit(isWarmColor, isColdColor, "green");
 
 type Color = Infer<typeof isColor>; // returns "red" | "orange" | "blue" | "cyan" | "teal" | "green"
 ```
