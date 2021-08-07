@@ -61,3 +61,13 @@ You can also access the array of options from the *Soit* instance :
 ```ts
 isColor.options.forEach((color) => console.log(color));
 ```
+
+## Subset
+
+You can create subsets using the sub method.
+
+```ts
+const isWarmColor = isColor.sub("red", "orange");
+```
+
+This checks on build time that `"red"` and `"orange"` do exist in the `isColor` instance.

@@ -65,7 +65,15 @@ describe('Soit', () => {
     const isSet1 = Soit('one', 'two', 'three');
     const isSet2 = Soit('two', 'three', 'four');
     const isCombinedSet = Soit(isSet1, isSet2);
-
     expect(isCombinedSet.options).toEqual(['one', 'two', 'three', 'four']);
+  });
+  it('should be able to create subsets', () => {
+    const isSet = Soit('one', 'two', 'three', 'four');
+    const isSubSet = isSet.sub('three', 'four');
+    expect(isSubSet("one")).toBe(false);
+    expect(isSubSet("two")).toBe(false);
+    expect(isSubSet("three")).toBe(true);
+    expect(isSubSet("four")).toBe(true);
+    expect(isSubSet.options).toEqual(["three", "four"]);
   });
 });

@@ -2,10 +2,14 @@ type Literal = string | number | boolean;
 
 type Options<O> = { options: readonly O[] };
 
-type Soit<O extends Literal> = ((testedOption: Literal) => testedOption is O) &
-  Options<O>;
+type SubSoit<O extends Literal> = <S extends O[]>(
+  ...subOptions: S
+) => Soit<S[number]>;
 
-type LiteralOrOptions = Literal | Soit<Literal> | Options<Literal>;
+type Soit<O extends Literal> = ((testedOption: Literal) => testedOption is O) &
+  Options<O> & { sub: SubSoit<O> };
+
+type LiteralOrOptions<L extends Literal = Literal> = Literal | Soit<L> | Options<L>;
 
 export type Infer<O extends LiteralOrOptions> = O extends Options<Literal>
   ? O['options'][number]
@@ -77,6 +81,8 @@ function Soit(...inputOptions: readonly LiteralOrOptions[]) {
   }
 
   check.options = options;
+
+  check.sub = Soit;
 
   return check;
 }
