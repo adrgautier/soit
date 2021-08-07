@@ -76,4 +76,12 @@ describe('Soit', () => {
     expect(isSubSet("four")).toBe(true);
     expect(isSubSet.options).toEqual(["three", "four"]);
   });
+  it('should check object prop', () => {
+    const isSet = Soit('one', 'two');
+    expect(isSet({ prop: "one" }, "prop")).toBe(true);
+    expect(isSet({ prop: "two" }, "prop")).toBe(true);
+    expect(isSet({ prop: "three" }, "prop")).toBe(false);
+    expect(isSet({ prop: "four" }, "prop")).toBe(false);
+  })
 });
+

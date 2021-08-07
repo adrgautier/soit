@@ -6,8 +6,11 @@ type SubSoit<O extends Literal> = <S extends O[]>(
   ...subOptions: S
 ) => Soit<S[number]>;
 
-type Soit<O extends Literal> = ((testedOption: Literal) => testedOption is O) &
-  Options<O> & { sub: SubSoit<O> };
+type Soit<O extends Literal> = (
+  (((tested: Literal) => tested is O) &
+  (<K extends string, T extends {[k in K]: Literal}>(tested: T, key: K) => tested is T & {[k in K]: O}))
+& Options<O> & { sub: SubSoit<O> }
+);
 
 type LiteralOrOptions<L extends Literal = Literal> = Literal | Soit<L> | Options<L>;
 
@@ -15,6 +18,7 @@ export type Infer<O extends LiteralOrOptions> = O extends Options<Literal>
   ? O['options'][number]
   : O;
 
+// @ts-ignore  
 function Soit<T extends LiteralOrOptions, A extends T, R extends Literal[]>(
   optionA: A,
   ...restOptions: R
@@ -76,7 +80,10 @@ function Soit(...inputOptions: readonly LiteralOrOptions[]) {
 
   const options = Array.from(set);
 
-  function check(tested: Literal): tested is typeof options[number] {
+  function check(tested: Literal | {[k: string]: Literal}, key?: string): boolean {
+    if(key && typeof tested === "object") {
+      return options.some(o => o === tested[key]);
+    }
     return options.some(o => o === tested);
   }
 
