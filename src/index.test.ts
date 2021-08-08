@@ -82,4 +82,22 @@ describe('Soit', () => {
     expect(isSet({ prop: 'three' }, 'prop')).toBe(false);
     expect(isSet({ prop: 'four' }, 'prop')).toBe(false);
   });
+  it('should be able to extend values', () => {
+    const isSet = Soit(['one', 'two', 'three']);
+    const isExtendedSet = isSet.extend(['two', 'three', 'four']);
+    expect(isExtendedSet('one')).toBe(true);
+    expect(isExtendedSet('two')).toBe(true);
+    expect(isExtendedSet('three')).toBe(true);
+    expect(isExtendedSet('four')).toBe(true);
+    expect(Array.from(isExtendedSet)).toEqual(['one', 'two', 'three', 'four']);
+  });
+  it('should be able to diff values', () => {
+    const isSet = Soit(['one', 'two', 'three']);
+    const isDifferenceSet = isSet.difference(['three', 'four']);
+    expect(isDifferenceSet('one')).toBe(true);
+    expect(isDifferenceSet('two')).toBe(true);
+    expect(isDifferenceSet('three')).toBe(false);
+    expect(isDifferenceSet('four')).toBe(false);
+    expect(Array.from(isDifferenceSet)).toEqual(['one', 'two']);
+  });
 });

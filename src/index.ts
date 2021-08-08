@@ -4,8 +4,11 @@ type ArrayUtils<V extends Literal> = Pick<Array<V>, 'forEach' | 'map'>;
 
 type SetUtils<V extends Literal> = {
   subset: <S extends V>(subsetValues: Array<S>) => Soit<S>;
+  extend: <A extends Literal>(additionalValues: Array<A>) => Soit<A | V>;
+  difference: <D extends Literal>(differenceValues: Array<D>) => Soit<Exclude<V, D>>
 };
 
+/* This type aims to display an alias when manipulating a Soit instance. */
 type Soit<V extends Literal = Literal> = ((
   testedValue: Literal
 ) => testedValue is Literal) &
@@ -20,6 +23,8 @@ type Soit<V extends Literal = Literal> = ((
 function Soit<V extends Literal>(values: Array<V>): Soit<V> {
   const _set = new Set(values);
 
+  const _values = Array.from(_set);
+
   function _check(testedValue: Literal): testedValue is V;
 
   function _check<K extends string, T extends { [k in K]: Literal }>(
@@ -32,18 +37,21 @@ function Soit<V extends Literal>(values: Array<V>): Soit<V> {
     key?: string
   ): boolean {
     if (key && typeof testedValue === 'object') {
-      return Array.from(_set).some(o => o === testedValue[key]);
+      return values.some(o => o === testedValue[key]);
     }
-    return Array.from(_set).some(o => o === testedValue);
+    return values.some(o => o === testedValue);
   }
 
   const _arrayUtils: ArrayUtils<V> = {
-    forEach: (...args) => Array.from(_set).forEach(...args),
-    map: (...args) => Array.from(_set).map(...args),
+    forEach: (...args) => _values.forEach(...args),
+    map: (...args) => _values.map(...args),
   };
 
   const _setUtils: SetUtils<V> = {
     subset: <S extends V>(subsetValues: Array<S>) => Soit(subsetValues),
+    extend: <A extends Literal>(additionalValues: Array<A>) => Soit([..._values, ...additionalValues]),
+    // we cannot rely on filter and includes typings
+    difference: (differenceValues: Array<Literal>) => Soit(_values.filter(value => !differenceValues.includes(value)) as any) 
   };
 
   const _iterable: Iterable<V> = {

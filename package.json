@@ -1,6 +1,6 @@
 {
   "name": "soit",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Create a type guard from a list of literals.",
   "main": "dist/index.js",
   "sideEffects": false,
