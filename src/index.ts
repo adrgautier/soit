@@ -1,97 +1,58 @@
 type Literal = string | number | boolean;
 
-type Options<O> = { options: readonly O[] };
+type ArrayUtils<V extends Literal> = Pick<Array<V>, 'forEach' | 'map'>;
 
-type SubSoit<O extends Literal> = <S extends O[]>(
-  ...subOptions: S
-) => Soit<S[number]>;
+type SetUtils<V extends Literal> = {
+  subset: <S extends V>(subsetValues: Array<S>) => Soit<S>;
+};
 
-type Soit<O extends Literal> = (
-  (((tested: Literal) => tested is O) &
-  (<K extends string, T extends {[k in K]: Literal}>(tested: T, key: K) => tested is T & {[k in K]: O}))
-& Options<O> & { sub: SubSoit<O> }
-);
+type Soit<V extends Literal = Literal> = ((
+  testedValue: Literal
+) => testedValue is Literal) &
+  (<K extends string, T extends { [k in K]: Literal }>(
+    testedValue: T,
+    key: K
+  ) => testedValue is T & { [k in K]: Literal }) &
+  Iterable<V> &
+  ArrayUtils<V> &
+  SetUtils<V>;
 
-type LiteralOrOptions<L extends Literal = Literal> = Literal | Soit<L> | Options<L>;
+function Soit<V extends Literal>(values: Array<V>): Soit<V> {
+  const _set = new Set(values);
 
-export type Infer<O extends LiteralOrOptions> = O extends Options<Literal>
-  ? O['options'][number]
-  : O;
+  function _check(testedValue: Literal): testedValue is V;
 
-// @ts-ignore  
-function Soit<T extends LiteralOrOptions, A extends T, R extends Literal[]>(
-  optionA: A,
-  ...restOptions: R
-): Soit<Infer<A> | R[number]>;
+  function _check<K extends string, T extends { [k in K]: Literal }>(
+    testedValue: T,
+    key: K
+  ): testedValue is T & { [k in K]: V };
 
-function Soit<
-  T extends LiteralOrOptions,
-  A extends T,
-  B extends T,
-  R extends Literal[]
->(
-  optionA: A,
-  optionB: B,
-  ...restOptions: R
-): Soit<Infer<A> | Infer<B> | R[number]>;
-
-function Soit<
-  T extends LiteralOrOptions,
-  A extends T,
-  B extends T,
-  C extends T,
-  R extends Literal[]
->(
-  optionA: A,
-  optionB: B,
-  optionC: C,
-  ...restOptions: R
-): Soit<Infer<A> | Infer<B> | Infer<C> | R[number]>;
-
-function Soit<
-  T extends LiteralOrOptions,
-  A extends T,
-  B extends T,
-  C extends T,
-  D extends T,
-  R extends Literal[]
->(
-  optionA: A,
-  optionB: B,
-  optionC: C,
-  optionD: D,
-  ...restOptions: R
-): Soit<Infer<A> | Infer<B> | Infer<C> | Infer<D> | R[number]>;
-
-function Soit(...inputOptions: readonly LiteralOrOptions[]) {
-  const set: Set<Literal> = inputOptions.reduce(
-    (acc: Set<Literal>, option: LiteralOrOptions) => {
-      // Soit instances actually have the "function" type on runtime
-      if (typeof option === 'function' || typeof option === 'object') {
-        if ('options' in option) {
-          return new Set([...Array.from(acc), ...option.options]);
-        }
-        return acc;
-      }
-      return new Set([...Array.from(acc), option]);
-    },
-    new Set([])
-  );
-
-  const options = Array.from(set);
-
-  function check(tested: Literal | {[k: string]: Literal}, key?: string): boolean {
-    if(key && typeof tested === "object") {
-      return options.some(o => o === tested[key]);
+  function _check(
+    testedValue: Literal | { [k: string]: Literal },
+    key?: string
+  ): boolean {
+    if (key && typeof testedValue === 'object') {
+      return Array.from(_set).some(o => o === testedValue[key]);
     }
-    return options.some(o => o === tested);
+    return Array.from(_set).some(o => o === testedValue);
   }
 
-  check.options = options;
+  const _arrayUtils: ArrayUtils<V> = {
+    forEach: (...args) => Array.from(_set).forEach(...args),
+    map: (...args) => Array.from(_set).map(...args),
+  };
 
-  check.sub = Soit;
+  const _setUtils: SetUtils<V> = {
+    subset: <S extends V>(subsetValues: Array<S>) => Soit(subsetValues),
+  };
 
-  return check;
+  const _iterable: Iterable<V> = {
+    [Symbol.iterator]: () => _set[Symbol.iterator](),
+  };
+
+  return Object.assign(_check, _iterable, _setUtils, _arrayUtils);
 }
+
+export type Infer<S extends Soit> = Parameters<S['subset']>[0][number];
 
 export default Soit;

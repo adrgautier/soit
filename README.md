@@ -12,10 +12,10 @@ I wanted a simple lib which provides a type guard function from a list of values
 
 ## Definitions
 
-A *Soit* instance can be created by passing literals (string, number or boolean) as arguments to the `Soit` function.
+A *Soit* instance can be created by passing literals (string, number or boolean) in an array to the `Soit` function.
 
 ```ts
-const isWarmColor = Soit("red", "orange");
+const isWarmColor = Soit(["red", "orange"]);
 ```
 
 You can infer the corresponding union using the `Infer` "helper" provided by the lib.
@@ -23,51 +23,61 @@ You can infer the corresponding union using the `Infer` "helper" provided by the
 type WarmColor = Infer<typeof isWarmColor>; // returns "red" | "orange"
 ```
 
-You can pass as many literals as you want.
+You can pass any string, number or boolean you want.
 ```ts
-const isColdColor = Soit("blue", "cyan", "teal");
+const isColdColor = Soit(["one", 1, true]);
 ```
 
-You can also use other *Soit* instances to create new definitions.
+*Soit* instances are iterable and can be used to create new definitions.
 
 ```ts
-const isColor = Soit(isWarmColor, isColdColor, "green");
+const isColor = Soit([...isWarmColor, "green", "blue"]);
 
-type Color = Infer<typeof isColor>; // returns "red" | "orange" | "blue" | "cyan" | "teal" | "green"
+type Color = Infer<typeof isColor>; // returns "red" | "orange" | "green"
 ```
-
-> Note: due to typescript limits, you can pass up to 4 *Soit* instances.
-> However there are no limits for literals. 
-
 
 ## Guard
 
 The *Soit* instance is intended to be used as a type guard :
 ```ts
-function describeColor(color: Color) {
+function handleColor(color: Color) {
     if(isWarmColor(color)) {
         // color can be "red" | "orange"
-        return "This is a warm color.";
     }
-    // color can be "blue" | "cyan" | "teal" | "green"
-    return "This is a cold color.";
+    // color can be "blue" | "green"
 }
 ```
 
-## Options
-
-You can also access the array of options from the *Soit* instance :
-
+You can also check a prop from an object :
 ```ts
-isColor.options.forEach((color) => console.log(color));
+function handleColor(car: Ferrari | Lamborghini) {
+    if(isRedColor(car, "color")) {
+        // car is Ferrari
+    }
+    // car is Lamborghini
+}
+```
+> This aims to infer the type of the object.
+> Doing `isRedColor(car.color)` would not work to infer car's type. 
+
+## Array utils
+
+Because the *Soit* instance is iterable, you can access the corresponding array:
+```ts
+const colors = Array.from(isColor);
 ```
 
-## Subset
+`map` and `forEach` can be used without `Array.from()`. 
+```ts
+isColor.forEach((color) => console.log(color));
+```
 
-You can create subsets using the sub method.
+## Set utils
+
+You can create subsets using the `subset` method.
 
 ```ts
-const isWarmColor = isColor.sub("red", "orange");
+const isWarmColor = isColor.subset(["red", "orange"]);
 ```
 
 This checks on build time that `"red"` and `"orange"` do exist in the `isColor` instance.
