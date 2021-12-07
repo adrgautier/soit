@@ -1,43 +1,136 @@
+import { get } from 'dot-prop';
+
 type Literal = string | number | boolean;
+
+/* This type ensures that the input type is not a set of unknown values. */
+type SubLiteral<T> = string extends T
+  ? never
+  : number extends T
+  ? never
+  : boolean extends T
+  ? never
+  : Literal;
+
+type Check<V extends Literal> = ((testedValue: Literal) => testedValue is V) &
+  (<K1 extends string, T extends { [k in K1]?: Literal }>(
+    testedValue: T,
+    key: K1
+  ) => testedValue is T & { [k in K1]: V }) &
+  (<
+    K1 extends string,
+    K2 extends string,
+    T extends { [k in K1]?: { [k in K2]?: Literal } }
+  >(
+    testedValue: T,
+    key: `${K1}.${K2}`
+  ) => testedValue is T & { [k in K1]: { [k in K2]: V } }) &
+  (<
+    K1 extends string,
+    K2 extends string,
+    K3 extends string,
+    T extends { [k in K1]?: { [k in K2]?: { [k in K3]?: Literal } } }
+  >(
+    testedValue: T,
+    key: `${K1}.${K2}.${K3}`
+  ) => testedValue is T & { [k in K1]: { [k in K2]: { [k in K3]: V } } }) &
+  (<
+    K1 extends string,
+    K2 extends string,
+    K3 extends string,
+    K4 extends string,
+    T extends {
+      [k in K1]?: { [k in K2]?: { [k in K3]?: { [k in K4]?: Literal } } };
+    }
+  >(
+    testedValue: T,
+    key: `${K1}.${K2}.${K3}.${K4}`
+  ) => testedValue is T &
+    { [k in K1]: { [k in K2]: { [k in K3]: { [k in K4]: V } } } });
 
 type ArrayUtils<V extends Literal> = Pick<Array<V>, 'forEach' | 'map'>;
 
 type SetUtils<V extends Literal> = {
-  subset: <S extends V>(subsetValues: Array<S>) => Soit<S>;
-  extend: <A extends Literal>(additionalValues: Array<A>) => Soit<A | V>;
-  difference: <D extends Literal>(differenceValues: Array<D>) => Soit<Exclude<V, D>>
+  /**
+   * Creates a subset of the current set.
+   *
+   * @param values (array of Literals)
+   * @returns `Soit` instance
+   */
+  subset: <S extends V>(subsetValues: readonly S[]) => Soit<S>;
+  /**
+   * Creates a extended set from the current set.
+   *
+   * @param values (array of Literals)
+   * @returns `Soit` instance
+   */
+  extend: <A extends SubLiteral<A>>(
+    additionalValues: readonly A[]
+  ) => Soit<A | V>;
+  /**
+   * Creates a new set from the current set by excluding values.
+   *
+   * @param values (array of Literals)
+   * @returns `Soit` instance
+   */
+  difference: <D extends SubLiteral<D>>(
+    differenceValues: readonly D[]
+  ) => Soit<Exclude<V, D>>;
 };
 
 /* This type aims to display an alias when manipulating a Soit instance. */
-type Soit<V extends Literal = Literal> = ((
-  testedValue: Literal
-) => testedValue is Literal) &
-  (<K extends string, T extends { [k in K]: Literal }>(
-    testedValue: T,
-    key: K
-  ) => testedValue is T & { [k in K]: Literal }) &
+type Soit<V extends Literal = Literal> = Check<V> &
   Iterable<V> &
   ArrayUtils<V> &
   SetUtils<V>;
 
-function Soit<V extends Literal>(values: Array<V>): Soit<V> {
+function _soit<V extends Literal>(values: readonly V[]) {
   const _set = new Set(values);
 
   const _values = Array.from(_set);
 
   function _check(testedValue: Literal): testedValue is V;
 
-  function _check<K extends string, T extends { [k in K]: Literal }>(
+  function _check<K extends string, T extends { [k in K]?: Literal }>(
     testedValue: T,
     key: K
   ): testedValue is T & { [k in K]: V };
 
-  function _check(
-    testedValue: Literal | { [k: string]: Literal },
-    key?: string
-  ): boolean {
+  function _check<
+    K1 extends string,
+    K2 extends string,
+    T extends { [k in K1]?: { [k in K2]?: Literal } }
+  >(
+    testedValue: T,
+    key: `${K1}.${K2}`
+  ): testedValue is T & { [k in K1]: { [k in K2]: V } };
+
+  function _check<
+    K1 extends string,
+    K2 extends string,
+    K3 extends string,
+    T extends { [k in K1]?: { [k in K2]?: { [k in K3]?: Literal } } }
+  >(
+    testedValue: T,
+    key: `${K1}.${K2}.${K3}`
+  ): testedValue is T & { [k in K1]: { [k in K2]: { [k in K3]: V } } };
+
+  function _check<
+    K1 extends string,
+    K2 extends string,
+    K3 extends string,
+    K4 extends string,
+    T extends {
+      [k in K1]?: { [k in K2]?: { [k in K3]?: { [k in K4]?: Literal } } };
+    }
+  >(
+    testedValue: T,
+    key: `${K1}.${K2}.${K3}.${K4}`
+  ): testedValue is T &
+    { [k in K1]: { [k in K2]: { [k in K3]: { [k in K4]: V } } } };
+
+  function _check(testedValue: Literal | object, key?: string): boolean {
     if (key && typeof testedValue === 'object') {
-      return values.some(o => o === testedValue[key]);
+      return values.some(o => o === get(testedValue, key));
     }
     return values.some(o => o === testedValue);
   }
@@ -48,10 +141,13 @@ function Soit<V extends Literal>(values: Array<V>): Soit<V> {
   };
 
   const _setUtils: SetUtils<V> = {
-    subset: <S extends V>(subsetValues: Array<S>) => Soit(subsetValues),
-    extend: <A extends Literal>(additionalValues: Array<A>) => Soit([..._values, ...additionalValues]),
+    subset: subsetValues => _soit(subsetValues),
+    extend: additionalValues => _soit([..._values, ...additionalValues]),
     // we cannot rely on filter and includes typings
-    difference: (differenceValues: Array<Literal>) => Soit(_values.filter(value => !differenceValues.includes(value)) as any) 
+    difference: differenceValues =>
+      _soit(
+        _values.filter(value => !differenceValues.includes(value as any)) as any
+      ),
   };
 
   const _iterable: Iterable<V> = {
@@ -59,6 +155,21 @@ function Soit<V extends Literal>(values: Array<V>): Soit<V> {
   };
 
   return Object.assign(_check, _iterable, _setUtils, _arrayUtils);
+}
+
+/**
+ * Creates a new `Soit` instance with the given set of values.
+ *
+ * ```
+ * const is123 = Soit([1, 2, 3]);
+ * if(is123(value)) { ... }
+ * ```
+ *
+ * @param values (array of Literals)
+ * @returns `Soit` instance
+ */
+function Soit<V extends SubLiteral<V>>(values: readonly V[]): Soit<V> {
+  return _soit(values);
 }
 
 export type Infer<S extends Soit> = Parameters<S['subset']>[0][number];

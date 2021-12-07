@@ -1,4 +1,4 @@
-import Soit from './index';
+import Soit from '../src/index';
 
 describe('Soit', () => {
   it('should guard for any given string literal', () => {
@@ -75,12 +75,67 @@ describe('Soit', () => {
     expect(isSubSet('four')).toBe(true);
     expect(Array.from(isSubSet)).toEqual(['three', 'four']);
   });
-  it('should check object prop', () => {
+  it('should check object first level prop', () => {
     const isSet = Soit(['one', 'two']);
-    expect(isSet({ prop: 'one' }, 'prop')).toBe(true);
-    expect(isSet({ prop: 'two' }, 'prop')).toBe(true);
-    expect(isSet({ prop: 'three' }, 'prop')).toBe(false);
-    expect(isSet({ prop: 'four' }, 'prop')).toBe(false);
+    expect(isSet({ level1: 'one' }, 'level1')).toBe(true);
+    expect(isSet({ level1: 'two' }, 'level1')).toBe(true);
+    expect(isSet({ level1: 'three' }, 'level1')).toBe(false);
+    expect(isSet({ level1: 'four' }, 'level1')).toBe(false);
+  });
+  it('should check object second level prop', () => {
+    const isSet = Soit(['one', 'two']);
+    expect(isSet({ level1: { level2: 'one' } }, 'level1.level2')).toBe(true);
+    expect(isSet({ level1: { level2: 'two' } }, 'level1.level2')).toBe(true);
+    expect(isSet({ level1: { level2: 'three' } }, 'level1.level2')).toBe(false);
+    expect(isSet({ level1: { level2: 'four' } }, 'level1.level2')).toBe(false);
+  });
+  it('should check object third level prop', () => {
+    const isSet = Soit(['one', 'two']);
+    expect(
+      isSet({ level1: { level2: { level3: 'one' } } }, 'level1.level2.level3')
+    ).toBe(true);
+    expect(
+      isSet({ level1: { level2: { level3: 'two' } } }, 'level1.level2.level3')
+    ).toBe(true);
+    expect(
+      isSet({ level1: { level2: { level3: 'three' } } }, 'level1.level2.level3')
+    ).toBe(false);
+    expect(
+      isSet({ level1: { level2: { level3: 'four' } } }, 'level1.level2.level3')
+    ).toBe(false);
+  });
+  it('should check object fourth level prop', () => {
+    const isSet = Soit(['one', 'two']);
+    expect(
+      isSet(
+        { level1: { level2: { level3: { level4: 'one' } } } },
+        'level1.level2.level3.level4'
+      )
+    ).toBe(true);
+    expect(
+      isSet(
+        { level1: { level2: { level3: { level4: 'two' } } } },
+        'level1.level2.level3.level4'
+      )
+    ).toBe(true);
+    expect(
+      isSet(
+        { level1: { level2: { level3: { level4: 'three' } } } },
+        'level1.level2.level3.level4'
+      )
+    ).toBe(false);
+    expect(
+      isSet(
+        { level1: { level2: { level3: { level4: 'four' } } } },
+        'level1.level2.level3.level4'
+      )
+    ).toBe(false);
+  });
+  it('should handle optional prop', () => {
+    const isSet = Soit(['one']);
+    expect(isSet({ prop: 'one' } as { prop?: string }, 'prop')).toBe(true);
+    expect(isSet({} as { prop?: string }, 'prop')).toBe(false);
+    expect(isSet({ prop: 'two' }, 'prop')).toBe(false);
   });
   it('should be able to extend values', () => {
     const isSet = Soit(['one', 'two', 'three']);

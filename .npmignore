@@ -1,2 +1,4 @@
-!dist
+benchmark
 coverage
+!dist
+tests
