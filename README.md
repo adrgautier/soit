@@ -1,5 +1,7 @@
 # Soit
 
+![npm](https://img.shields.io/npm/v/soit?style=flat-square)[![codecov](https://codecov.io/gh/adrgautier/soit/branch/master/graph/badge.svg?token=IPTGBDRRJE)](https://codecov.io/gh/adrgautier/soit)
+
 **Soit** (French for: either) is like an enhanced [Set()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) function which simplifies **type narrowing** and aims to replace TypeScript enums.
 
 ## Motivation
