@@ -1,6 +1,6 @@
 # Soit
 
-![npm](https://img.shields.io/npm/v/soit?style=flat-square)[![codecov](https://codecov.io/gh/adrgautier/soit/branch/master/graph/badge.svg?token=IPTGBDRRJE)](https://codecov.io/gh/adrgautier/soit)
+ ![typescript](https://img.shields.io/badge/written%20for-typescript-3178c6?style=flat-square) [![codecov](https://img.shields.io/codecov/c/github/adrgautier/soit?style=flat-square&token=IPTGBDRRJE)](https://codecov.io/gh/adrgautier/soit) ![prettier](https://img.shields.io/badge/code%20style-prettier-ff69b4?style=flat-square) [![npm](https://img.shields.io/npm/v/soit?style=flat-square)](https://www.npmjs.com/package/soit)
 
 **Soit** (French for: either) is like an enhanced [Set()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set) function which simplifies **type narrowing** and aims to replace TypeScript enums.
 
