@@ -24,6 +24,28 @@ import Soit, { Infer } from '../src/index';
 }
 
 /**
+ * Should prevent unknown object inference
+ */
+{
+    const randomFunction = () => {};
+    const randomArray = [""];
+    const randomObject = {};
+    const randomString = "";
+
+    // @ts-expect-error
+    type Fail1 = Infer<typeof randomFunction>;
+    
+    // @ts-expect-error
+    type Fail2 = Infer<typeof randomArray>;
+    
+    // @ts-expect-error
+    type Fail3 = Infer<typeof randomObject>;
+
+    // @ts-expect-error
+    type Fail4 = Infer<typeof randomString>;
+}
+
+/**
  * Should guard and infer any given string literal
  */
 {

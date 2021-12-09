@@ -172,6 +172,6 @@ function Soit<V extends SubLiteral<V>>(values: readonly V[]): Soit<V> {
   return _soit(values);
 }
 
-export type Infer<S extends Soit> = Parameters<S['subset']>[0][number];
+export type Infer<S extends Soit> = S extends Soit<infer V> ? V: never;
 
 export default Soit;
