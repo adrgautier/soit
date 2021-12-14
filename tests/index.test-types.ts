@@ -27,22 +27,22 @@ import Soit, { Infer } from '../src/index';
  * Should prevent unknown object inference
  */
 {
-    const randomFunction = () => {};
-    const randomArray = [""];
-    const randomObject = {};
-    const randomString = "";
+  const randomFunction = () => {};
+  const randomArray = [''];
+  const randomObject = {};
+  const randomString = '';
 
-    // @ts-expect-error
-    type Fail1 = Infer<typeof randomFunction>;
-    
-    // @ts-expect-error
-    type Fail2 = Infer<typeof randomArray>;
-    
-    // @ts-expect-error
-    type Fail3 = Infer<typeof randomObject>;
+  // @ts-expect-error
+  type Fail1 = Infer<typeof randomFunction>;
 
-    // @ts-expect-error
-    type Fail4 = Infer<typeof randomString>;
+  // @ts-expect-error
+  type Fail2 = Infer<typeof randomArray>;
+
+  // @ts-expect-error
+  type Fail3 = Infer<typeof randomObject>;
+
+  // @ts-expect-error
+  type Fail4 = Infer<typeof randomString>;
 }
 
 /**
@@ -98,6 +98,48 @@ import Soit, { Infer } from '../src/index';
   }
   if (isSet1(three)) {
     expectNever(three);
+  }
+}
+
+/**
+ * Should guard and infer any given mixed literal
+ */
+{
+  const set1 = [1, 'two', false] as const;
+  const oneNum = 1;
+  const twoNum = 2;
+  const oneStr = 'one';
+  const twoStr = 'two';
+  const trueBool = true;
+  const falseBool = false;
+
+  const isSet1 = Soit(set1);
+  type Set1 = Infer<typeof isSet1>;
+
+  expectType<TypeEqual<Set1, 1 | 'two' | false>>(true);
+  if (isSet1(oneNum)) {
+    expectType<Set1>(oneNum);
+    // @ts-expect-error
+    expectNever(oneNum);
+  }
+  if (isSet1(oneStr)) {
+    expectNever(oneStr);
+  }
+  if (isSet1(twoStr)) {
+    expectType<Set1>(twoStr);
+    // @ts-expect-error
+    expectNever(twoStr);
+  }
+  if (isSet1(twoNum)) {
+    expectNever(twoNum);
+  }
+  if (isSet1(falseBool)) {
+    expectType<Set1>(falseBool);
+    // @ts-expect-error
+    expectNever(falseBool);
+  }
+  if (isSet1(trueBool)) {
+    expectNever(trueBool);
   }
 }
 

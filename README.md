@@ -38,7 +38,7 @@ type Color = Infer<typeof isColor>; // infers "red" | "orange" | "green" | "blue
 
 ## Guard
 
-A *Soit* instance is intended to be used as a type guard :
+A *Soit* instance is intended to be used as a type guard:
 ```ts
 function handleColor(color: Color) {
     if(isWarmColor(color)) {
@@ -48,7 +48,7 @@ function handleColor(color: Color) {
 }
 ```
 
-You can also check a prop from an object :
+You can also check a prop from an object:
 ```ts
 function handleColor(car: Ferrari | Lamborghini) {
     if(isRedColor(car, "color")) {
@@ -60,19 +60,19 @@ function handleColor(car: Ferrari | Lamborghini) {
 > This aims to infer the type of the object.
 > Doing `isRedColor(car.color)` would not work to infer car's type. 
 
-You can check a prop up to the fourth level in the object:
+You can check a prop deeper in the object:
 ```ts
-isRedColor(car, "look.exterior.colors.main")
+isRedColor(car, "look.exterior.colors.main");
 ```
 
 ## Array utils
 
-Because the *Soit* instance is **iterable**, you can access the corresponding array :
+Because the *Soit* instance is **iterable**, you can access the corresponding array:
 ```ts
 const colors = Array.from(isColor);
 ```
 
-You may prefer this syntax :
+You may prefer this syntax:
 ```ts
 const colors = [...isColor];
 ```
@@ -81,7 +81,7 @@ const colors = [...isColor];
 ```ts
 isColor.forEach((color) => console.log(color));
 
-const uppercaseColors = isColor.map(color => color.toUpperCase())
+const uppercaseColors = isColor.map(color => color.toUpperCase());
 ```
 
 ## Set utils
