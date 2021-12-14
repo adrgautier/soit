@@ -1,6 +1,24 @@
-import { get } from 'dot-prop';
+import { get as getProperty } from 'dot-prop';
 
 type Literal = string | number | boolean;
+
+type ValueStructure<
+  Key extends string,
+  Value extends Literal = Literal,
+> = Key extends `${infer SupKey}.${infer SubKey}`
+  ? Record<SupKey, ValueStructure<SubKey, Value>>
+  : Record<Key, Value>;
+
+type PossibleKey<ObjectType extends Record<string | number, unknown>> = {
+  [Key in keyof ObjectType & string]: ObjectType[Key] extends Record<
+    string,
+    unknown
+  >
+    ? `${Key}.${PossibleKey<ObjectType[Key]>}`
+    : ObjectType[Key] extends Literal | undefined
+    ? Key
+    : never;
+}[keyof ObjectType & string];
 
 /* This type ensures that the input type is not a set of unknown values. */
 type SubLiteral<T> = string extends T
@@ -11,41 +29,32 @@ type SubLiteral<T> = string extends T
   ? never
   : Literal;
 
-type Check<V extends Literal> = ((testedValue: Literal) => testedValue is V) &
-  (<K1 extends string, T extends { [k in K1]?: Literal }>(
-    testedValue: T,
-    key: K1
-  ) => testedValue is T & { [k in K1]: V }) &
-  (<
-    K1 extends string,
-    K2 extends string,
-    T extends { [k in K1]?: { [k in K2]?: Literal } }
+type Guard<V extends Literal> = {
+  /**
+   * Uses the `Soit` instance as a type guard:
+   * ```ts
+   * const is123 = Soit([1, 2, 3]);
+   * if(is123(value)) { ... }
+   * ```
+   *
+   *You can also check a prop from an object (up to the fourth key-level):
+   *```ts
+   *isRedColor(car, "look.exterior.colors.main");
+   *```
+   *
+   * @param {Literal| object} values
+   * @param {string} key dot path
+   * @returns {boolean} true or false
+   */
+  (testedValue: Literal): testedValue is V;
+  <
+    TKey extends PossibleKey<TValue>,
+    TValue extends Record<string | number, unknown>,
   >(
-    testedValue: T,
-    key: `${K1}.${K2}`
-  ) => testedValue is T & { [k in K1]: { [k in K2]: V } }) &
-  (<
-    K1 extends string,
-    K2 extends string,
-    K3 extends string,
-    T extends { [k in K1]?: { [k in K2]?: { [k in K3]?: Literal } } }
-  >(
-    testedValue: T,
-    key: `${K1}.${K2}.${K3}`
-  ) => testedValue is T & { [k in K1]: { [k in K2]: { [k in K3]: V } } }) &
-  (<
-    K1 extends string,
-    K2 extends string,
-    K3 extends string,
-    K4 extends string,
-    T extends {
-      [k in K1]?: { [k in K2]?: { [k in K3]?: { [k in K4]?: Literal } } };
-    }
-  >(
-    testedValue: T,
-    key: `${K1}.${K2}.${K3}.${K4}`
-  ) => testedValue is T &
-    { [k in K1]: { [k in K2]: { [k in K3]: { [k in K4]: V } } } });
+    testedValue: TValue,
+    key: TKey
+  ): testedValue is TValue & ValueStructure<TKey, V>;
+};
 
 type ArrayUtils<V extends Literal> = Pick<Array<V>, 'forEach' | 'map'>;
 
@@ -78,7 +87,7 @@ type SetUtils<V extends Literal> = {
 };
 
 /* This type aims to display an alias when manipulating a Soit instance. */
-type Soit<V extends Literal = Literal> = Check<V> &
+type Soit<V extends Literal = Literal> = Guard<V> &
   Iterable<V> &
   ArrayUtils<V> &
   SetUtils<V>;
@@ -88,49 +97,50 @@ function _soit<V extends Literal>(values: readonly V[]) {
 
   const _values = Array.from(_set);
 
-  function _check(testedValue: Literal): testedValue is V;
+  function _guard(testedValue: Literal): testedValue is V;
 
-  function _check<K extends string, T extends { [k in K]?: Literal }>(
+  function _guard<K extends string, T extends { [k in K]?: Literal }>(
     testedValue: T,
     key: K
   ): testedValue is T & { [k in K]: V };
 
-  function _check<
+  function _guard<
     K1 extends string,
     K2 extends string,
-    T extends { [k in K1]?: { [k in K2]?: Literal } }
+    T extends { [k in K1]?: { [k in K2]?: Literal } },
   >(
     testedValue: T,
     key: `${K1}.${K2}`
   ): testedValue is T & { [k in K1]: { [k in K2]: V } };
 
-  function _check<
+  function _guard<
     K1 extends string,
     K2 extends string,
     K3 extends string,
-    T extends { [k in K1]?: { [k in K2]?: { [k in K3]?: Literal } } }
+    T extends { [k in K1]?: { [k in K2]?: { [k in K3]?: Literal } } },
   >(
     testedValue: T,
     key: `${K1}.${K2}.${K3}`
   ): testedValue is T & { [k in K1]: { [k in K2]: { [k in K3]: V } } };
 
-  function _check<
+  function _guard<
     K1 extends string,
     K2 extends string,
     K3 extends string,
     K4 extends string,
     T extends {
       [k in K1]?: { [k in K2]?: { [k in K3]?: { [k in K4]?: Literal } } };
-    }
+    },
   >(
     testedValue: T,
     key: `${K1}.${K2}.${K3}.${K4}`
-  ): testedValue is T &
-    { [k in K1]: { [k in K2]: { [k in K3]: { [k in K4]: V } } } };
+  ): testedValue is T & {
+    [k in K1]: { [k in K2]: { [k in K3]: { [k in K4]: V } } };
+  };
 
-  function _check(testedValue: Literal | object, key?: string): boolean {
+  function _guard(testedValue: Literal | object, key?: string): boolean {
     if (key && typeof testedValue === 'object') {
-      return values.some(o => o === get(testedValue, key));
+      return values.some(o => o === getProperty(testedValue, key));
     }
     return values.some(o => o === testedValue);
   }
@@ -154,24 +164,24 @@ function _soit<V extends Literal>(values: readonly V[]) {
     [Symbol.iterator]: () => _set[Symbol.iterator](),
   };
 
-  return Object.assign(_check, _iterable, _setUtils, _arrayUtils);
+  return Object.assign(_guard, _iterable, _setUtils, _arrayUtils);
 }
 
 /**
  * Creates a new `Soit` instance with the given set of values.
  *
- * ```
+ * ```ts
  * const is123 = Soit([1, 2, 3]);
  * if(is123(value)) { ... }
  * ```
  *
- * @param values (array of Literals)
+ * @param values array of Literals
  * @returns `Soit` instance
  */
 function Soit<V extends SubLiteral<V>>(values: readonly V[]): Soit<V> {
   return _soit(values);
 }
 
-export type Infer<S extends Soit> = S extends Soit<infer V> ? V: never;
+export type Infer<S extends Soit> = S extends Soit<infer V> ? V : never;
 
 export default Soit;
