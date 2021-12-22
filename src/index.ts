@@ -21,7 +21,7 @@ type Guard<V extends Literal> = {
    *
    *You can also check a prop from an object (up to the fourth key-level):
    *```ts
-   *isRedColor(car, "look.exterior.colors.main")
+   *isRedColor(car, "look.exterior.colors.main");
    *```
    *
    * @param {Literal| object} values
@@ -203,57 +203,14 @@ function _soit<V extends Literal>(values: readonly V[]) {
     return _check(testedValue, key);
   }
 
-  function _assert(testedValue: Literal): asserts testedValue is V;
-
-  function _assert<K extends string, T extends { [k in K]?: Literal }>(
-    testedValue: T,
-    key: K
-  ): asserts testedValue is T & { [k in K]: V };
-
-  function _assert<
-    K1 extends string,
-    K2 extends string,
-    T extends { [k in K1]?: { [k in K2]?: Literal } }
-  >(
-    testedValue: T,
-    key: `${K1}.${K2}`
-  ): asserts testedValue is T & { [k in K1]: { [k in K2]: V } };
-
-  function _assert<
-    K1 extends string,
-    K2 extends string,
-    K3 extends string,
-    T extends { [k in K1]?: { [k in K2]?: { [k in K3]?: Literal } } }
-  >(
-    testedValue: T,
-    key: `${K1}.${K2}.${K3}`
-  ): asserts testedValue is T & { [k in K1]: { [k in K2]: { [k in K3]: V } } };
-
-  function _assert<
-    K1 extends string,
-    K2 extends string,
-    K3 extends string,
-    K4 extends string,
-    T extends {
-      [k in K1]?: { [k in K2]?: { [k in K3]?: { [k in K4]?: Literal } } };
-    }
-  >(
-    testedValue: T,
-    key: `${K1}.${K2}.${K3}.${K4}`
-  ): asserts testedValue is T &
-    { [k in K1]: { [k in K2]: { [k in K3]: { [k in K4]: V } } } };
-
-  function _assert(
-    testedValue: Literal | object,
-    key?: string
-  ): asserts testedValue is typeof testedValue {
-    if (!_check(testedValue, key)) {
-      throw 'No match';
-    }
-  }
+  
 
   const _assertUtil: AssertUtil<V> = {
-    assert: _assert,
+    assert: (testedValue: Literal | object,
+      key?: string
+    ): asserts testedValue is typeof testedValue {
+      assert(_soit(_values), testedValue as any, key as any)
+    }
   };
 
   const _arrayUtils: ArrayUtils<V> = {
@@ -296,3 +253,65 @@ function Soit<V extends SubLiteral<V>>(values: readonly V[]): Soit<V> {
 export type Infer<S extends Soit> = S extends Soit<infer V> ? V : never;
 
 export default Soit;
+
+
+function _check(soit: Soit, testedValue: Literal | object, key?: string): boolean {
+  if (key && typeof testedValue === 'object') {
+    return Array.from(soit).some(o => o === get(testedValue, key));
+  }
+  return Array.from(soit).some(o => o === testedValue);
+}
+
+export function assert<
+  S extends Soit,>(soit: S,testedValue: Literal): asserts testedValue is Infer<S>;
+
+export function assert<
+  S extends Soit,K extends string, T extends { [k in K]?: Literal }>(soit: S,
+    testedValue: T,
+    key: K
+  ): asserts testedValue is T & { [k in K]: Infer<S> };
+
+export function assert<
+  S extends Soit,
+    K1 extends string,
+    K2 extends string,
+    T extends { [k in K1]?: { [k in K2]?: Literal } }
+  >(soit: S,
+    testedValue: T,
+    key: `${K1}.${K2}`
+  ): asserts testedValue is T & { [k in K1]: { [k in K2]: Infer<S> } };
+
+export function assert<
+    S extends Soit,
+    K1 extends string,
+    K2 extends string,
+    K3 extends string,
+    T extends { [k in K1]?: { [k in K2]?: { [k in K3]?: Literal } } }
+  >(soit: S,
+    testedValue: T,
+    key: `${K1}.${K2}.${K3}`
+  ): asserts testedValue is T & { [k in K1]: { [k in K2]: { [k in K3]: Infer<S> } } };
+
+export function assert<
+    S extends Soit,
+    K1 extends string,
+    K2 extends string,
+    K3 extends string,
+    K4 extends string,
+    T extends {
+      [k in K1]?: { [k in K2]?: { [k in K3]?: { [k in K4]?: Literal } } };
+    }
+  >(soit: S,
+    testedValue: T,
+    key: `${K1}.${K2}.${K3}.${K4}`
+  ): asserts testedValue is T &
+    { [k in K1]: { [k in K2]: { [k in K3]: { [k in K4]: Infer<S> } } } };
+
+export function assert(soit: Soit,
+    testedValue: Literal | object,
+    key?: string
+  ): asserts testedValue is typeof testedValue {
+    if (!_check(soit,testedValue, key)) {
+      throw 'No match';
+    }
+  }

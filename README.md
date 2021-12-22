@@ -62,7 +62,7 @@ function handleColor(car: Ferrari | Lamborghini) {
 
 You can check a prop up to the fourth level in the object:
 ```ts
-isRedColor(car, "look.exterior.colors.main")
+isRedColor(car, "look.exterior.colors.main");
 ```
 
 ## Array utils
@@ -81,7 +81,7 @@ const colors = [...isColor];
 ```ts
 isColor.forEach((color) => console.log(color));
 
-const uppercaseColors = isColor.map(color => color.toUpperCase())
+const uppercaseColors = isColor.map(color => color.toUpperCase());
 ```
 
 ## Set utils

@@ -4,7 +4,7 @@
  * the file needs to compile without error.
  */
 import { expectType, expectNever, TypeEqual } from 'ts-expect';
-import Soit, { Infer } from '../src/index';
+import Soit, { Infer, assert } from '../src/index';
 
 /**
  * Should prevent unknown literals array
@@ -72,7 +72,9 @@ import Soit, { Infer } from '../src/index';
     expectNever(three);
   }
 
-  isSet1.assert('one');
+  //assert(isSet1, three);
+  isSet1.assert(three)
+  three
 }
 
 /**
