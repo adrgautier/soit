@@ -7,6 +7,7 @@
   "devDependencies": {
     "@types/benchmark": "2.1.4",
     "@types/jest": "29.5.7",
+    "@types/node": "20.8.10",
     "benchmark": "2.1.4",
     "jest": "29.7.0",
     "prettier": "3.0.3",

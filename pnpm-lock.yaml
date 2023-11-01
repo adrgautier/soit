@@ -16,6 +16,9 @@ devDependencies:
   '@types/jest':
     specifier: 29.5.7
     version: 29.5.7
+  '@types/node':
+    specifier: 20.8.10
+    version: 20.8.10
   benchmark:
     specifier: 2.1.4
     version: 2.1.4
