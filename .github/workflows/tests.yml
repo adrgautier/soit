@@ -13,12 +13,14 @@ jobs:
           - 20
           - 18
           - 16
-          - 14
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npx yarn install
-      - run: npx yarn test
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      - run: pnpm install
+      - run: pnpm test
       - uses: codecov/codecov-action@v2
