@@ -1,4 +1,9 @@
+.github
 benchmark
 coverage
 !dist
+src
 tests
+prettier.config.js
+tsconfig.json
+tsconfig.test.json
