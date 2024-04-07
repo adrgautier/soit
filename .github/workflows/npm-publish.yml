@@ -10,6 +10,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    requires:
+      - test
     steps:
       - uses: actions/checkout@v4
       # Setup .npmrc file to publish to npm
@@ -21,7 +23,6 @@ jobs:
         with:
           version: 8
       - run: pnpm install
-      - run: pnpm test
       - run: pnpm build
       - run: npm publish
         env:
