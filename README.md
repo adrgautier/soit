@@ -1,4 +1,4 @@
-# Soit
+# ![Soit](./Soit.svg)
 
  ![typescript](https://img.shields.io/badge/written%20for-typescript-3178c6?style=flat-square) [![codecov](https://img.shields.io/codecov/c/github/adrgautier/soit?style=flat-square&token=IPTGBDRRJE)](https://codecov.io/gh/adrgautier/soit) ![prettier](https://img.shields.io/badge/code%20style-prettier-ff69b4?style=flat-square) [![npm](https://img.shields.io/npm/v/soit?style=flat-square)](https://www.npmjs.com/package/soit)
 
@@ -46,23 +46,6 @@ function handleColor(color: Color) {
     }
     // color can be "blue" | "green"
 }
-```
-
-You can also check a prop from an object:
-```ts
-function handleColor(car: Ferrari | Lamborghini) {
-    if(isRedColor(car, "color")) {
-        // car is Ferrari
-    }
-    // car is Lamborghini
-}
-```
-> This aims to infer the type of the object.
-> Doing `isRedColor(car.color)` would not work to infer car's type. 
-
-You can check a prop deeper in the object:
-```ts
-isRedColor(car, "look.exterior.colors.main");
 ```
 
 ## Array utils
@@ -128,4 +111,3 @@ const isWarmColor = Soit(warmColors); // error ts(2345)
 const warmColors = ["red", "orange"] as const;
 const isWarmColor = Soit(warmColors);
 ```
-

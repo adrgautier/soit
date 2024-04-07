@@ -1,24 +1,4 @@
-import { get as getProperty } from 'dot-prop';
-
 type Literal = string | number | boolean;
-
-type ValueStructure<
-  Key extends string,
-  Value extends Literal = Literal,
-> = Key extends `${infer SupKey}.${infer SubKey}`
-  ? Record<SupKey, ValueStructure<SubKey, Value>>
-  : Record<Key, Value>;
-
-type PossibleKey<ObjectType extends Record<string | number, unknown>> = {
-  [Key in keyof ObjectType & string]: ObjectType[Key] extends Record<
-    string,
-    unknown
-  >
-    ? `${Key}.${PossibleKey<ObjectType[Key]>}`
-    : ObjectType[Key] extends Literal | undefined
-    ? Key
-    : never;
-}[keyof ObjectType & string];
 
 /* This type ensures that the input type is not a set of unknown values. */
 type SubLiteral<T> = string extends T
@@ -37,23 +17,10 @@ type Guard<V extends Literal> = {
    * if(is123(value)) { ... }
    * ```
    *
-   *You can also check a prop from an object (up to the fourth key-level):
-   *```ts
-   *isRedColor(car, "look.exterior.colors.main");
-   *```
-   *
-   * @param {Literal| object} values
-   * @param {string} key dot path
+   * @param {Literal} value
    * @returns {boolean} true or false
    */
   (testedValue: Literal): testedValue is V;
-  <
-    TKey extends PossibleKey<TValue>,
-    TValue extends Record<string | number, unknown>,
-  >(
-    testedValue: TValue,
-    key: TKey
-  ): testedValue is TValue & ValueStructure<TKey, V>;
 };
 
 type ArrayUtils<V extends Literal> = Pick<Array<V>, 'forEach' | 'map'>;
@@ -97,51 +64,7 @@ function _soit<V extends Literal>(values: readonly V[]) {
 
   const _values = Array.from(_set);
 
-  function _guard(testedValue: Literal): testedValue is V;
-
-  function _guard<K extends string, T extends { [k in K]?: Literal }>(
-    testedValue: T,
-    key: K
-  ): testedValue is T & { [k in K]: V };
-
-  function _guard<
-    K1 extends string,
-    K2 extends string,
-    T extends { [k in K1]?: { [k in K2]?: Literal } },
-  >(
-    testedValue: T,
-    key: `${K1}.${K2}`
-  ): testedValue is T & { [k in K1]: { [k in K2]: V } };
-
-  function _guard<
-    K1 extends string,
-    K2 extends string,
-    K3 extends string,
-    T extends { [k in K1]?: { [k in K2]?: { [k in K3]?: Literal } } },
-  >(
-    testedValue: T,
-    key: `${K1}.${K2}.${K3}`
-  ): testedValue is T & { [k in K1]: { [k in K2]: { [k in K3]: V } } };
-
-  function _guard<
-    K1 extends string,
-    K2 extends string,
-    K3 extends string,
-    K4 extends string,
-    T extends {
-      [k in K1]?: { [k in K2]?: { [k in K3]?: { [k in K4]?: Literal } } };
-    },
-  >(
-    testedValue: T,
-    key: `${K1}.${K2}.${K3}.${K4}`
-  ): testedValue is T & {
-    [k in K1]: { [k in K2]: { [k in K3]: { [k in K4]: V } } };
-  };
-
-  function _guard(testedValue: Literal | object, key?: string): boolean {
-    if (key && typeof testedValue === 'object') {
-      return values.some(o => o === getProperty(testedValue, key));
-    }
+  function _guard(testedValue: Literal): testedValue is V {
     return values.some(o => o === testedValue);
   }
 

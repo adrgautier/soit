@@ -14,12 +14,6 @@ module.exports = {
    */
   trailingComma: 'es5',
   /**
-   * Do not print spaces between brackets.
-   * If true, puts the > of a multi-line jsx element at the end of the last line instead of being
-   * alone on the next line
-   */
-  jsxBracketSameLine: false,
-  /**
    * Specify which parse to use.
    * Valid options:
    *   - "flow"
