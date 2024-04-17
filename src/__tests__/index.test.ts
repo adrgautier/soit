@@ -1,4 +1,4 @@
-import Soit from '../src/index';
+import Soit from '../index';
 
 describe('Soit', () => {
   it('should guard for any given string literal', () => {
@@ -92,5 +92,20 @@ describe('Soit', () => {
     expect(isDifferenceSet('three')).toBe(false);
     expect(isDifferenceSet('four')).toBe(false);
     expect(Array.from(isDifferenceSet)).toEqual(['one', 'two']);
+  });
+  it('should be able to create a template', () => {
+    const isSet = Soit(['one', 'two', 'three']);
+    const isTemplate = Soit.Template('$', isSet);
+    expect(Array.from(isTemplate)).toEqual(['$one', '$two', '$three']);
+    expect(isTemplate('$one')).toBe(true);
+    expect(isTemplate('$two')).toBe(true);
+    expect(isTemplate('$three')).toBe(true);
+    expect(isTemplate('$four')).toBe(false);
+    expect(isTemplate('one')).toBe(false);
+    expect(isTemplate.capture('$one')).toEqual(['one']);
+    expect(isTemplate.capture('$two')).toEqual(['two']);
+    expect(isTemplate.capture('$three')).toEqual(['three']);
+    expect(isTemplate.capture('$four')).toBe(null);
+    expect(isTemplate.capture('one')).toBe(null);
   });
 });
