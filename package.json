@@ -1,6 +1,6 @@
 {
   "name": "soit",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Create a type guard from a list of literals.",
   "main": "dist/index.js",
   "sideEffects": false,
@@ -19,7 +19,7 @@
     "build": "npm run clean && tsc",
     "test": "jest --coverage && npm run compile",
     "compile": "tsc -p ./tsconfig.test.json --noEmit",
-    "prettier": "prettier '(src|tests)/**/*.ts' --write"
+    "prettier": "prettier 'src/**/*.ts' --write"
   },
   "repository": {
     "type": "git",
@@ -36,21 +36,20 @@
   "license": "MIT",
   "jest": {
     "transform": {
-      "^.+\\.tsx?$": "ts-jest"
+      "^.+\\.ts$": "ts-jest"
     },
-    "testRegex": "/tests/.*.test.ts$",
+    "testRegex": "/src/.*.test.ts$",
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/dist/"
     ],
     "collectCoverageFrom": [
-      "src/**/*.ts"
+      "src/**/*.ts",
+      "!src/**/*types.ts"
     ],
     "moduleFileExtensions": [
       "ts",
-      "tsx",
       "js",
-      "jsx",
       "json",
       "node"
     ]

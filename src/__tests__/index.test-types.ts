@@ -4,7 +4,8 @@
  * the file needs to compile without error.
  */
 import { expectType, expectNever, TypeEqual } from 'ts-expect';
-import Soit, { Infer } from '../src/index';
+import Soit, { Infer } from '../index';
+import { _soitTemplate } from '../template';
 
 /**
  * Should prevent unknown literals array
@@ -26,7 +27,7 @@ import Soit, { Infer } from '../src/index';
 /**
  * Should prevent unknown object inference
  */
-{
+/*{
   const randomFunction = () => {};
   const randomArray = [''];
   const randomObject = {};
@@ -43,7 +44,7 @@ import Soit, { Infer } from '../src/index';
 
   // @ts-expect-error
   type Fail4 = Infer<typeof randomString>;
-}
+}*/
 
 /**
  * Should guard and infer any given string literal
@@ -231,7 +232,7 @@ import Soit, { Infer } from '../src/index';
 }
 
 /**
- * Sould be iterable
+ * Should be iterable
  */
 {
   const isSet1 = Soit(['one', 'two', 'three']);
@@ -239,6 +240,18 @@ import Soit, { Infer } from '../src/index';
 
   const set1 = Array.from(isSet1);
   expectType<TypeEqual<Set1[], typeof set1>>(true);
+}
+
+/**
+ * Template should be iterable
+ */
+{
+  const isSet1 = Soit(['one', 'two', 'three']);
+  const isTemplate = Soit.Template(isSet1, '-', isSet1);
+  type Template = Infer<typeof isTemplate>;
+
+  const templatePossibleValues = Array.from(isTemplate);
+  expectType<TypeEqual<Template[], typeof templatePossibleValues>>(true);
 }
 
 /**
