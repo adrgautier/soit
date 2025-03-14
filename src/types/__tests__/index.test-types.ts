@@ -1,27 +1,28 @@
 import { TypeEqual, expectType } from 'ts-expect';
-import Soit, { Infer } from '../..';
+import Soit from '../..';
 
-/* Infer generic should work for both Soit and SoitTemplate */
 {
   // GIVEN
-  const isDigit = Soit([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
-  const template = Soit.Template(isDigit, '-', isDigit, '-', isDigit);
+  const Digit = Soit([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  const Template = Soit.Template(Digit, '-', Digit, '-', Digit);
 
   // WHEN
-  type Digit = Infer<typeof isDigit>;
-  type Template = Infer<typeof template>;
+  type Digit = ReturnType<typeof Digit>;
+  type Template = ReturnType<typeof Template>;
 
   //THEN
   expectType<TypeEqual<Template, `${Digit}-${Digit}-${Digit}`>>(true);
 }
-/* Infer generic shoud return never if not Soit or SoitTemplate */
+
 {
   // GIVEN
-  const object = {};
+  const Fruits = Soit(['apple', 'orange', 'kiwi']);
+  const Template = Soit.Template('Eat ', Fruits);
 
   // WHEN
-  type Object = Infer<typeof object>;
+  type Fruits = ReturnType<typeof Fruits>;
+  type Template = ReturnType<typeof Template>;
 
-  // THEN
-  expectType<TypeEqual<Object, never>>(true);
+  //THEN
+  expectType<TypeEqual<Template, `Eat ${Fruits}`>>(true);
 }

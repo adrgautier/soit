@@ -3,60 +3,61 @@ import { Soit } from '../core.types';
 import {
   ValuesFromTemplate,
   CapturedGroupsFromTemplate,
-  PrimitiveTemplate,
+  LiteralTemplate,
   CaptureGroupsFromTemplate,
   NextGroups,
 } from '../template.types';
 import { _soitTemplate } from '../../template';
+import { SoitRecord } from '../record.types';
 
 /**
- * PrimitiveTemplate
+ * LiteralTemplate
  */
 /* should return never if contains unknown string */
 {
-  expectType<TypeEqual<PrimitiveTemplate<[string]>, never>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<['abc', string]>, never>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<[string, 123]>, never>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<['abc', string, 123]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<[string]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<['abc', string]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<[string, 123]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<['abc', string, 123]>, never>>(true);
   expectType<
     TypeEqual<
-      PrimitiveTemplate<[Soit<'a' | 'b' | 'c'>, string, Soit<1 | 2 | 3>]>,
+      LiteralTemplate<[Soit<'a' | 'b' | 'c'>, string, Soit<1 | 2 | 3>]>,
       never
     >
   >(true);
 }
 /* should return never if contains unknown number */
 {
-  expectType<TypeEqual<PrimitiveTemplate<[number]>, never>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<['abc', number]>, never>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<[number, 123]>, never>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<['abc', number, 123]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<[number]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<['abc', number]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<[number, 123]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<['abc', number, 123]>, never>>(true);
   expectType<
     TypeEqual<
-      PrimitiveTemplate<[Soit<'a' | 'b' | 'c'>, number, Soit<1 | 2 | 3>]>,
+      LiteralTemplate<[Soit<'a' | 'b' | 'c'>, number, Soit<1 | 2 | 3>]>,
       never
     >
   >(true);
 }
 /* should return never if contains unknown boolean */
 {
-  expectType<TypeEqual<PrimitiveTemplate<[boolean]>, never>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<['abc', boolean]>, never>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<[boolean, 123]>, never>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<['abc', boolean, 123]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<[boolean]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<['abc', boolean]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<[boolean, 123]>, never>>(true);
+  expectType<TypeEqual<LiteralTemplate<['abc', boolean, 123]>, never>>(true);
   expectType<
     TypeEqual<
-      PrimitiveTemplate<[Soit<'a' | 'b' | 'c'>, boolean, Soit<1 | 2 | 3>]>,
+      LiteralTemplate<[Soit<'a' | 'b' | 'c'>, boolean, Soit<1 | 2 | 3>]>,
       never
     >
   >(true);
 }
 /* should return unknown if primitive */
 {
-  expectType<TypeEqual<PrimitiveTemplate<[true]>, unknown>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<['abc']>, unknown>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<[123]>, unknown>>(true);
-  expectType<TypeEqual<PrimitiveTemplate<['abc', false, 123]>, unknown>>(true);
+  expectType<TypeEqual<LiteralTemplate<[true]>, unknown>>(true);
+  expectType<TypeEqual<LiteralTemplate<['abc']>, unknown>>(true);
+  expectType<TypeEqual<LiteralTemplate<[123]>, unknown>>(true);
+  expectType<TypeEqual<LiteralTemplate<['abc', false, 123]>, unknown>>(true);
 }
 
 /**
@@ -74,6 +75,15 @@ import { _soitTemplate } from '../../template';
   >;
   expectType<
     TypeEqual<Result, 'uncertainstringtemplate' | 'variablestringtemplate'>
+  >(true);
+}
+/* should return a union with all possible values from template (one SoitRecord) */
+{
+  type Result = ValuesFromTemplate<
+    ['60', SoitRecord<{ minute: 'm', seconds: 's'}>]
+  >;
+  expectType<
+    TypeEqual<Result, '60s' | '60m'>
   >(true);
 }
 /* should return a union with all possible values from template (many Soit) */

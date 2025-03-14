@@ -1,4 +1,3 @@
-import { ArrayUtils } from './types/core.types';
 import {
   SoitTemplate,
   TemplateUtils,
@@ -16,16 +15,14 @@ export function _soitTemplate<T extends TemplateValues>(
     generateValuesFromTemplate(template)
   );
 
-  const _values = Array.from(_set);
-
-  function _guard(testedValue: string): testedValue is ValuesFromTemplate<T> {
-    return getRegExpFromValues(template).test(testedValue);
+  function _passthrough<S extends ValuesFromTemplate<T>>(value: S): S {
+    return value;
   }
 
-  const _arrayUtils: ArrayUtils<ValuesFromTemplate<T>> = {
-    forEach: (...args) => _values.forEach(...args),
-    map: (...args) => _values.map(...args),
-  };
+  const _guardUtils = {
+    guard: (testedValue: string): testedValue is ValuesFromTemplate<T> =>
+       getRegExpFromValues(template).test(testedValue)
+  }
 
   const _templateUtils: TemplateUtils<T> = {
     capture: (testedValue: string) => {
@@ -51,5 +48,5 @@ export function _soitTemplate<T extends TemplateValues>(
     [Symbol.iterator]: () => _set[Symbol.iterator](),
   };
 
-  return Object.assign(_guard, _iterable, _arrayUtils, _templateUtils);
+  return Object.assign(_passthrough, _guardUtils, _iterable, _templateUtils) as SoitTemplate<T>;
 }

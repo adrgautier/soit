@@ -1,36 +1,36 @@
 import { TypeEqual, expectType } from 'ts-expect';
-import { Primitive } from '../core.types';
+import { Literal } from '../core.types';
 
 /**
  * Primitive
  */
 /* should return never if unknown string */
 {
-  type Result = Primitive<string>;
+  type Result = Literal<string>;
   expectType<TypeEqual<Result, never>>(true);
 }
 /* should return never if unknown number */
 {
-  type Result = Primitive<number>;
+  type Result = Literal<number>;
   expectType<TypeEqual<Result, never>>(true);
 }
 /* should return never if unknown boolean */
 {
-  type Result = Primitive<boolean>;
+  type Result = Literal<boolean>;
   expectType<TypeEqual<Result, never>>(true);
 }
 /* should return unknown if defined string */
 {
-  type Result = Primitive<'abc'>;
+  type Result = Literal<'abc'>;
   expectType<TypeEqual<Result, unknown>>(true);
 }
 /* should return unknown if defined number */
 {
-  type Result = Primitive<123>;
+  type Result = Literal<123>;
   expectType<TypeEqual<Result, unknown>>(true);
 }
 /* should return unknown if defined boolean */
 {
-  type Result = Primitive<true>;
+  type Result = Literal<true>;
   expectType<TypeEqual<Result, unknown>>(true);
 }

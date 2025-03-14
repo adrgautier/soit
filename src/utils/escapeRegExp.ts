@@ -1,5 +1,5 @@
-import { Literal } from '../types/core.types';
+import { Primitive } from '../types/core.types';
 
-export function escapeRegExp(literal: Literal) {
+export function escapeRegExp(literal: Primitive) {
   return String(literal).replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
 }

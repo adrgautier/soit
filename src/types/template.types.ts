@@ -1,22 +1,25 @@
-import { ArrayUtils, Literal, Primitive, Soit } from './core.types';
+import { Literal, Primitive, Soit } from './core.types';
+import { SoitRecord } from './record.types';
 
 /* Represents a part/chunk of a template. */
-export type TemplateValue = Literal | Soit;
+export type TemplateValue = Primitive | Soit | SoitRecord;
 
 /* Represents the template. */
 export type TemplateValues = readonly [TemplateValue, ...TemplateValue[]];
 
-/* Ensures that all parts/chunks of a template is a finite primitive. */
-export type PrimitiveTemplate<T extends readonly [unknown, ...unknown[]]> =
-  T[number] extends Soit | Primitive<T[number]> ? unknown : never;
+/* Ensures that all parts/chunks of a template is a fixed literal. */
+export type LiteralTemplate<T extends readonly [unknown, ...unknown[]]> =
+  T[number] extends Soit | SoitRecord | Literal<T[number]> ? unknown : never;
 
 /* Converts a template value to be used in a template literal. */
 type TemplateValueToString<V extends TemplateValue> = V extends Soit<infer SV>
-  ? LiteralToString<SV>
-  : LiteralToString<V>;
+  ? PrimitiveToString<SV> :
+  (V extends SoitRecord<infer SV>
+    ? PrimitiveToString<SV[keyof SV]> :
+    PrimitiveToString<V>);
 
 /* Converts a literal into a string. */
-type LiteralToString<L extends Literal | Soit> = L extends Literal
+type PrimitiveToString<L> = L extends Primitive
   ? `${L}`
   : never;
 
@@ -25,7 +28,7 @@ export type ValuesFromTemplate<
   T extends TemplateValues,
   Acc extends string = '',
 > = T extends [
-  infer T0 extends Literal | Soit,
+  infer T0 extends TemplateValue,
   ...infer TRest extends TemplateValues,
 ]
   ? ValuesFromTemplate<TRest, `${Acc}${TemplateValueToString<T0>}`>
@@ -36,15 +39,16 @@ export type CaptureGroupsFromTemplate<
   T extends TemplateValues,
   Acc extends string[] = [],
 > = T extends [
-  infer T0 extends Literal | Soit,
+  infer T0 extends TemplateValue,
   ...infer TRest extends TemplateValues,
 ]
   ? CaptureGroupsFromTemplate<
-      TRest,
-      T0 extends Soit<infer V> ? [...Acc, LiteralToString<V>] : Acc
-    >
+    TRest,
+    T0 extends Soit<infer V> ? [...Acc, PrimitiveToString<V>] :
+    T0 extends SoitRecord<infer R> ? [...Acc, PrimitiveToString<R[keyof R]>] : Acc
+  >
   : T[0] extends Soit<infer V>
-  ? [...Acc, LiteralToString<V>] | null
+  ? [...Acc, PrimitiveToString<V>] | null
   : Acc | null;
 
 type RestToken<WithRest extends boolean> = WithRest extends true ? string : '';
@@ -56,16 +60,23 @@ export type NextGroups<
   AccValues extends string,
   AccGroups extends string[],
   WithRest extends boolean = false,
-> = TChunk extends Soit<infer TargetValues>
-  ? TestedValues extends `${AccValues}${TargetValues}${infer Rest extends
-      RestToken<WithRest>}`
-    ? TestedValues extends `${AccValues}${infer Group}${Rest}`
+> = TChunk extends Soit<infer TargetValues> // TODO: add SoitRecord
+  ? (TestedValues extends `${AccValues}${TargetValues}${infer Rest extends
+    RestToken<WithRest>}`
+    ? (TestedValues extends `${AccValues}${infer Group}${Rest}`
       ? [...AccGroups, Group]
-      : null
-    : null
-  : TestedValues extends `${AccValues}${LiteralToString<TChunk>}${RestToken<WithRest>}`
-  ? AccGroups
-  : null;
+      : null)
+    : null)
+  : (TChunk extends SoitRecord<infer Record> ?
+    (TestedValues extends `${AccValues}${Record[keyof Record]}${infer Rest extends
+      RestToken<WithRest>}`
+      ? (TestedValues extends `${AccValues}${infer Group}${Rest}`
+        ? [...AccGroups, Group]
+        : null)
+      : null)
+    : (TestedValues extends `${AccValues}${PrimitiveToString<TChunk>}${RestToken<WithRest>}`
+      ? AccGroups
+      : null));
 
 /* Get the expected capture groups for the tested value. */
 export type CapturedGroupsFromTemplate<
@@ -77,21 +88,37 @@ export type CapturedGroupsFromTemplate<
   ? CaptureGroupsFromTemplate<T> // if the tested value is a string, return all possible capture groups
   : AccGroups extends unknown[]
   ? T extends [
-      infer T0 extends Literal | Soit,
-      ...infer TRest extends TemplateValues,
-    ]
-    ? CapturedGroupsFromTemplate<
-        TRest,
-        TestedValues,
-        `${AccValues}${TemplateValueToString<T0>}`,
-        NextGroups<T0, TestedValues, AccValues, AccGroups, true>
-      >
-    : NextGroups<T[0], TestedValues, AccValues, AccGroups>
+    infer T0 extends TemplateValue,
+    ...infer TRest extends TemplateValues,
+  ]
+  ? CapturedGroupsFromTemplate<
+    TRest,
+    TestedValues,
+    `${AccValues}${TemplateValueToString<T0>}`,
+    NextGroups<T0, TestedValues, AccValues, AccGroups, true>
+  >
+  : NextGroups<T[0], TestedValues, AccValues, AccGroups>
   : null;
+
+export type TemplatePassthrough<V extends string> = {
+  /**
+   * Uses the `SoitTemplate` object as a passthrough.
+   * Only accepts values in the set.
+   * ```ts
+   * const Getter = Soit.Template('get', Soit(['Seconds', 'Minutes', 'Hours']));
+   * Getter('getMonths');
+   *        ^^^^^^^^^^^
+   * ```
+   *
+   * @param {string} value
+   * @returns {string} value
+   */
+  <S extends V>(value: S): S;
+};
 
 export type TemplateUtils<T extends TemplateValues> = {
   /**
-   * Uses the `SoitTemplate` instance to capture the values from a string:
+   * Uses the `SoitTemplate` object to capture the values from a string:
    * ```ts
    * const isGetter = Soit.Template('get', Soit(['Seconds', 'Minutes', 'Hours']));
    * const [unit] = isGetter.capture('getSeconds');
@@ -105,9 +132,9 @@ export type TemplateUtils<T extends TemplateValues> = {
   ) => CapturedGroupsFromTemplate<T, V>;
 };
 
-export type TemplateGuard<V extends string> = {
+export type TemplateGuardUtils<V extends string> = {
   /**
-   * Uses the `SoitTemplate` instance as a type guard:
+   * Uses the `SoitTemplate` object as a type guard:
    * ```ts
    * const isGetter = Soit.Template('get', Soit(['Seconds', 'Minutes', 'Hours']));
    * if(isGetter(method)) { ... }
@@ -116,12 +143,25 @@ export type TemplateGuard<V extends string> = {
    * @param {string} value
    * @returns {boolean} true or false
    */
-  (testedValue: string): testedValue is V;
+  guard: (testedValue: string) => testedValue is V;
 };
 
-export type SoitTemplate<T extends TemplateValues> = TemplateGuard<
-  ValuesFromTemplate<T>
-> &
+export type InferUtils<V extends string> = {
+  /**
+   * Infer the union from the `SoitTemplate` object.  
+   * ⚠️ **Undefined during runtime** ⚠️
+   * ```ts
+   * type Union = typeof SoitTemplate.Infer;
+   * ```
+   */
+  Infer: V;
+};
+
+export type SoitTemplate<T extends TemplateValues> =
+  TemplatePassthrough<ValuesFromTemplate<T>> &
+  TemplateGuardUtils<
+    ValuesFromTemplate<T>
+  > &
   Iterable<ValuesFromTemplate<T>> &
-  ArrayUtils<ValuesFromTemplate<T>> &
-  TemplateUtils<T>;
+  TemplateUtils<T> &
+  InferUtils<ValuesFromTemplate<T>>;

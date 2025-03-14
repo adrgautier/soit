@@ -1,18 +1,17 @@
-import { ArrayUtils, Literal, SetUtils, Soit } from './types/core.types';
+import { GuardUtils, Primitive, SetUtils, Soit } from './types/core.types';
 import { SOIT_SYMBOL } from './constants';
 
-export function _soitCore<V extends Literal>(values: readonly V[]): Soit<V> {
+export function _soitCore<V extends Primitive>(values: readonly V[]): Soit<V> {
   const _set = new Set(values);
 
   const _values = Array.from(_set);
 
-  function _guard(testedValue: Literal): testedValue is V {
-    return values.some(o => o === testedValue);
+  function _passthrough<S extends V>(value: S): S {
+    return value;
   }
 
-  const _arrayUtils: ArrayUtils<V> = {
-    forEach: (...args) => _values.forEach(...args),
-    map: (...args) => _values.map(...args),
+  const _guardUtils: GuardUtils<V> = {
+    guard: (testedValue: Primitive): testedValue is V => values.some(o => o === testedValue)
   };
 
   const _setUtils: SetUtils<V> = {
@@ -29,7 +28,7 @@ export function _soitCore<V extends Literal>(values: readonly V[]): Soit<V> {
     [Symbol.iterator]: () => _set[Symbol.iterator](),
   };
 
-  return Object.assign(_guard, _iterable, _setUtils, _arrayUtils, {
+  return Object.assign(_passthrough, _guardUtils, _iterable, _setUtils, {
     [SOIT_SYMBOL]: true,
   });
 }
